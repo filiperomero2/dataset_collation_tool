@@ -3,6 +3,7 @@
 This repository contains a simple script for assembling datasets used in viral genomic epidemiology. It utilizes the NCBI Datasets command-line interface tool to retrieve and sample relevant genetic diversity.
 
 ## Command-Line Arguments
+
 The script accepts the following command-line arguments:
 
     --taxid                NCBI Taxonomy ID for the target virus.
@@ -29,7 +30,12 @@ The tool currently supports year-month and continent-based sampling. Future vers
 
 ## Installation and Dependencies
 
-Ensure that all dependencies are installed as specified in the env/dataset_collation_tool.yml file.
+Before running the script, ensure that all dependencies are installed:
+
+    git clone https://github.com/filiperomero2/dataset_collation_tool.git
+    cd dataset_collation_tool
+    mamba create -n dataset_collation_tool
+    mamba env update -n dataset_collation_tool --file env/dataset_collation_tool.yml
 
 ## Citation
 If you find this script useful, please consider citing this GitHub repository. =)
