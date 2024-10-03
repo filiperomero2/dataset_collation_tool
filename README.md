@@ -18,7 +18,7 @@ The script accepts the following command-line arguments:
 
 ## Example Usage:
 
-        python dataset_collation_tool.py --taxid 64320 --output zika_virus_ncbi_data --ambiguity-filter 0.1 --target 10
+    python dataset_collation_tool.py --taxid 64320 --output zika_virus_ncbi_data --ambiguity-filter 0.1 --target 10
 
 In this example, the script will:
 
