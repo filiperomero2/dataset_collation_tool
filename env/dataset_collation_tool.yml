@@ -1,0 +1,9 @@
+name: dataset_collation_tool
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - ncbi-datasets-cli=16.31.0
+  - pandas=2.2.2
+  - biopython=1.84
