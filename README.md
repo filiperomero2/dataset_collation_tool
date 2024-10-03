@@ -12,7 +12,7 @@ The script accepts the following command-line arguments:
     --ambiguity-filter     Maximum allowed percentage of ambiguous characters (default = 0.25, range: 0 - 1).
     --geo-unit             Geographic level for sampling (default: country) [options: country, continent].
     --time-unit            Temporal level for sampling (default: year) [options: year, year-month].
-    --output OUTPUT        Full path for the output directory.
+    --output               Full path for the output directory.
     --tag                  Tag or name for the subsetting scheme.
     --skip-download        Option to skip the download step (assumes the NCBI data package has already been downloaded and all paths are set correctly).
 
