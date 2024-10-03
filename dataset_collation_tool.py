@@ -1,5 +1,9 @@
 #!/usr/env python
 
+# Written by Filipe Moreira (PhD)
+# Federal University of Rio de Janeiro, Brazil
+# 2024-10-03
+
 import os
 import sys
 import subprocess
