@@ -64,27 +64,27 @@ def get_args():
 def validate_args(args):
 
     if args['skip_download']:
-        print("--skip-download option identified. Sarching for the ncbi_dataset/ directory.")
+        print("\n--skip-download option identified. Sarching for the ncbi_dataset/ directory.\n")
         my_path = f"{args['output']}/ncbi_dataset"
         my_path_2 = f"{args['output']}/ncbi_dataset/{args['tag']}"
         if(os.path.isdir(my_path)):
-            print('ncbi_dataset/ identified. Continuing...')
+            print('\nncbi_dataset/ identified. Continuing...\n')
             if(os.path.isdir(my_path_2)):
-                print(f'Tag ->{args['tag']}<- for naming subsetting output directory was already used. Please provide a new one.')
+                print(f'\nTag ->{args['tag']}<- for naming subsetting output directory was already used. Please provide a new one.\n')
                 exit()
             else:
-                print('Valid tag will be employed.')
+                print('\nValid tag will be employed.\n')
         else:
-            print('ncbi_dataset/ not identified. Please check provided paths.')
+            print('\nncbi_dataset/ not identified. Please check provided paths.\n')
             exit()
     else:
         if(os.path.isdir(args['output'])):
-            print('Output file already exists (and --skip-download option was off). Please check paths.')
+            print('\nOutput file already exists (and --skip-download option was off). Please check paths.\n')
             exit()
         else:
-            print('Output path does not exist. Continuing...')
+            print('\nOutput path does not exist. Continuing...\n')
 
-    print("All arguments were succesfully verified.")
+    print("\nAll arguments were succesfully verified.\n")
 
     return(args)
 
@@ -107,7 +107,7 @@ def download_ncbi_datasets(args):
     command_rename_fasta = ['sed','s/ .*//g',f'{args['output']}/ncbi_dataset/data/genomic.fna']
     subprocess.run(command_rename_fasta,stdout=outfile_2)
 
-    print("The NCBI data package was downloaded and formatted.")
+    print("\nThe NCBI data package was downloaded and formatted.\n")
 
     return
 
@@ -125,6 +125,8 @@ def filter_and_sample_sequences(args):
     seq_path = f"{args['output']}/ncbi_dataset/data/genomic.renamed.fasta"
     sequences = SeqIO.to_dict(SeqIO.parse(seq_path, "fasta"))
     metadata = count_ambiguities(sequences,metadata)
+
+    reference_sequence_accession = metadata['Accession'][metadata['Source database']=='RefSeq'].tolist()
 
     pass_length_filter = metadata['Length'] >= args['length_filter']
     metadata_filt = metadata[pass_length_filter].copy()
@@ -166,9 +168,9 @@ def filter_and_sample_sequences(args):
 
     sub_df = metadata_filt.loc[sampled_indexes]
 
-    print("The dataset was filtered and sampled.")
+    print("\nThe dataset was filtered and sampled.\n")
 
-    write_outputs(sequences,sub_df,args)
+    write_outputs(sequences,sub_df,reference_sequence_accession,args)
 
     return
 
@@ -190,11 +192,12 @@ def count_ambiguities(sequences,metadata):
     metadata_cp['ambiguity'] = metadata_cp['Accession'].map(ambiguity)
     return metadata_cp
 
-def write_outputs(sequences, sub_df, args):
+def write_outputs(sequences,sub_df,reference_sequence_accession,args):
 
     accessions = sub_df['Accession']
 
     seq_objects_list = []
+
     for accession in accessions:
 
         seq = sequences[accession]
@@ -222,13 +225,41 @@ def write_outputs(sequences, sub_df, args):
     output_fasta = f"{args['output']}/ncbi_dataset/{args['tag']}/sampled_sequences.fasta"
     with open(output_fasta, "w") as output_handle:
         SeqIO.write(seq_objects_list, output_handle, "fasta")
+        print('\nThe sampled sequences were written to a file.\n')
+
+    if reference_sequence_accession:
+        ref_seq = sequences[reference_sequence_accession[0]]
+        output_reference_sequence = f"{args['output']}/ncbi_dataset/{args['tag']}/reference_sequence.fasta"
+        with open(output_reference_sequence, "w") as output_handle:
+            SeqIO.write(ref_seq, output_handle, "fasta")
+        print('\nThe reference sequence was written to a file.\n')
+        align_sequences_to_reference_genome(args)
+    else:
+        print('\nNo reference sequence available.\n')
 
     output_metadata = f"{args['output']}/ncbi_dataset/{args['tag']}/sampled_metadata.tsv"
     sub_df.to_csv(output_metadata, sep = "\t", index=False)
 
-    print('Sequence and filtered output files were written to files.')
+    print('\nAll output files were written.\n')
 
     return
+
+def align_sequences_to_reference_genome(args):
+
+    seq_path = f"{args['output']}/ncbi_dataset/{args['tag']}/sampled_sequences.fasta"
+    reference_seq_path = f"{args['output']}/ncbi_dataset/{args['tag']}/reference_sequence.fasta"
+    aligned_seq = f"{args['output']}/ncbi_dataset/{args['tag']}/aln.sampled_sequences"
+
+    minimap2_command = f"minimap2 -a --sam-hit-only --secondary=no --score-N=0 {reference_seq_path} {seq_path} -o {aligned_seq}.sam".split()
+    subprocess.run(minimap2_command)
+
+    gofasta_command = f"gofasta sam toMultiAlign --pad -s {aligned_seq}.sam -o {aligned_seq}.fasta".split()
+    subprocess.run(gofasta_command)
+    
+    print('\nSequences were aligned to the reference genome.\n')
+
+    return
+
 
 def main():
     args = get_args()
@@ -236,7 +267,7 @@ def main():
     if not args['skip_download']:
         download_ncbi_datasets(args)
     filter_and_sample_sequences(args)
-    print('The end.')
+    print('\nThe end.\n')
     return
 
 if __name__  == '__main__':
